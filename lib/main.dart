@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:junctionx_algiers/screens/splash_screen.dart';
+
 import 'screens/home_page.dart';
-import 'util/state_widget.dart';
+
 import 'package:firebase_core/firebase_core.dart';
 
 void main() {
-  StateWidget stateWidget = new StateWidget(
-    child: new MyApp(),
-  );
-  runApp(stateWidget);
+ 
+  
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -19,17 +18,16 @@ class MyApp extends StatelessWidget {
         future: Firebase.initializeApp(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-          return Text('smth');
-        }
+            return Text('smth');
+          }
 
-        // Once complete, show your application
-        if (snapshot.connectionState == ConnectionState.done) {
-          return MaterialApp(home: SplashScreen());
-        }
+          // Once complete, show your application
+          if (snapshot.connectionState == ConnectionState.done) {
+            return MaterialApp(home: homePage());
+          }
 
-        // Otherwise, show something whilst waiting for initialization to complete
-        return CircularProgressIndicator();
-          
+          // Otherwise, show something whilst waiting for initialization to complete
+          return CircularProgressIndicator();
         });
   }
 }

@@ -4,15 +4,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import './widgets/bottomBarNav.dart';
 import 'package:flutter/services.dart';
-import 'package:junctionx_algiers/models/state.dart';
-import 'package:junctionx_algiers/screens/chatScreen.dart';
-import 'package:junctionx_algiers/util/state_widget.dart';
+
 import 'package:junctionx_algiers/util/validator.dart';
 import 'package:junctionx_algiers/screens/notification.dart';
-import 'login.dart';
-import 'widgets/FirebaseMessageWrapper.dart';
-import 'widgets/widgets.dart';
-import '../screens/widgets/full_image.dart';
+import 'event_schedule.dart';
 
 class homePage extends StatefulWidget {
   final Color _backgroundColor = const Color(0xff1c1e21);
@@ -33,7 +28,7 @@ class _homePageState extends State<homePage> {
   Timer timer;
   int currentTab = 0; // to
   int hours = 0, minutes = 0, second = 0;
-  StateModel appState;
+
   bool _loadingVisible = false;
   Timer _timer;
   int seconds;
@@ -45,10 +40,10 @@ class _homePageState extends State<homePage> {
 // Get the current time
     var twoHours;
     var now = DateTime.now();
-    var eventTime = DateTime.parse("2020-12-20 21:26:00+01");
+    var eventTime = DateTime.parse("2020-12-24 16:00:00+01");
     // Get a 2-minute interval
     if (eventTime.isBefore(now))
-      twoHours = eventTime.add(Duration(hours: 53)).difference(now);
+      twoHours = eventTime.add(Duration(hours: 40)).difference(now);
     else
       twoHours = now.add(Duration(seconds: 1)).difference(now);
     print(twoHours);
@@ -109,7 +104,7 @@ class _homePageState extends State<homePage> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15.0),
               ),
-              color:  Color(0xFF232323),
+              color: Color(0xFF232323),
               child: Padding(
                 padding: const EdgeInsets.all(17.0),
                 child: Column(
@@ -168,25 +163,23 @@ class _homePageState extends State<homePage> {
 
   @override
   Widget build(BuildContext context) {
-    appState = StateWidget.of(context).state;
-    StateWidget.of(context).initUser();
-    if (!appState.isLoading &&
-        (appState.firebaseUserAuth == null ||
-            appState.user == null ||
-            appState.settings == null)) {
-      return loginPage();
-    } else {
-      if (appState.isLoading) {
-        _loadingVisible = true;
-      } else {
-        _loadingVisible = false;
-      }
-    }
     int hours = seconds ~/ 3600;
     int minutes = seconds % 3600 ~/ 60;
     int second = seconds % 60;
-
-    final userId = appState?.firebaseUserAuth?.uid ?? '';
+    int day;
+    if ((hours <= 40) & (hours > 32)) {
+      day = 1;
+    } else {
+      if ((hours <= 32) & (hours > 8)) {
+        day = 2;
+      } else {
+        if (hours == 0) {
+          day = 1;
+        } else {
+          day = 3;
+        }
+      }
+    }
 
     return WillPopScope(
       onWillPop: _onWillPop,
@@ -199,281 +192,154 @@ class _homePageState extends State<homePage> {
           ),
           backgroundColor: Color(0xFFFAA61C),
           automaticallyImplyLeading: false,
-          actions: <Widget>[
-            IconButton(
-              icon: Icon(
-                Icons.exit_to_app,
-                size: 30,
-                color: _accentColor,
-              ),
-              onPressed: () {
-                StateWidget.of(context).logOutUser();
-              },
-            )
-          ],
-          //iconTheme: IconThemeData(color: widget._accentColor),
+
+          //iconTheme: IconThemeData(color: widgetot._accentColor),
         ),
         backgroundColor: widget._backgroundColor,
-        body: FirebaseMessageWrapper(
-          SingleChildScrollView(
-            child: ConstrainedBox(
-              constraints:
-                  BoxConstraints(maxHeight: MediaQuery.of(context).size.height),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.only(top: 13.0),
-                    child: Align(
-                      alignment: Alignment.topCenter,
-                      child: Text(
-                        "TIME LEFT FOR SUBMISSION",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 2,
-                            color: widget._accentColor),
-                      ),
+        body: SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints:
+                BoxConstraints(maxHeight: MediaQuery.of(context).size.height),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(top: 13.0),
+                  child: Align(
+                    alignment: Alignment.topCenter,
+                    child: Text(
+                      "TIME LEFT FOR SUBMISSION",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 2,
+                          color: widget._accentColor),
                     ),
                   ),
-                  Padding(
-                    padding:
-                        const EdgeInsets.only(top: 16.0, left: 22, right: 22),
+                ),
+                Padding(
+                  padding:
+                      const EdgeInsets.only(top: 16.0, left: 22, right: 22),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          LabelText(
+                            label: 'HRS',
+                            value: "$hours",
+                          ),
+                          Text(
+                            ":",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 28),
+                          ),
+                          LabelText(label: 'MIN', value: "$minutes"),
+                          Text(
+                            ":",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 28),
+                          ),
+                          LabelText(label: 'SEC', value: "$second"),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 20, top: 20),
+                  child: Text(
+                    "NOTIFICATIONS",
+                    style: TextStyle(
+                        color: widget._textColor,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(
+                    top: 13,
+                  ),
+                  child: Container(
+                    height: 130,
                     child: Column(
-                      mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            LabelText(
-                              label: 'HRS',
-                              value: "$hours",
-                            ),
-                            Text(
-                              ":",
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 28),
-                            ),
-                            LabelText(label: 'MIN', value: "$minutes"),
-                            Text(
-                              ":",
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 28),
-                            ),
-                            LabelText(label: 'SEC', value: "$second"),
-                          ],
+                        Expanded(
+                          child: StreamBuilder<QuerySnapshot>(
+                            stream: FirebaseFirestore.instance
+                                .collection('notification')
+                                .orderBy('time', descending: true)
+                                .snapshots(),
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                return ListView.builder(
+                                    scrollDirection: Axis.horizontal,
+                                    itemCount: snapshot.data.docs.length,
+                                    itemBuilder: (context, i) {
+                                      return createCard(
+                                          snapshot.data.docs[i]
+                                              .data()['message'],
+                                          snapshot.data.docs[i].data()['time']);
+                                    });
+                              } else {
+                                return new Center(
+                                  child: snapshot.error != null
+                                      ? Text(
+                                          snapshot.error,
+                                          style: TextStyle(
+                                              color: widget._textColor),
+                                        )
+                                      : Container(),
+                                );
+                              }
+                            },
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 20, top: 20),
-                    child: Text(
-                      "NOTIFICATIONS",
-                      style: TextStyle(
-                          color: widget._textColor,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold),
-                    ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 20, top: 20),
+                  child: Text(
+                    "SCHEDULE",
+                    style: TextStyle(
+                        color: widget._textColor,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(
-                      top: 13,
-                    ),
-                    child: Container(
-                      height: 130,
-                      child: Column(
-                        children: <Widget>[
-                          Expanded(
-                            child: StreamBuilder<QuerySnapshot>(
-                              stream: FirebaseFirestore.instance
-                                  .collection('notification')
-                                  .orderBy('time', descending: true)
-                                  .snapshots(),
-                              builder: (context, snapshot) {
-                                if (snapshot.hasData) {
-                                  return ListView.builder(
-                                      scrollDirection: Axis.horizontal,
-                                      itemCount: snapshot.data.docs.length,
-                                      itemBuilder: (context, i) {
-                                        return createCard(
-                                            snapshot.data.docs[i]
-                                                .data()['message'],
-                                            snapshot.data.docs[i]
-                                                .data()['time']);
-                                      });
-                                } else {
-                                  return new Center(
-                                    child: snapshot.error != null
-                                        ? Text(
-                                            snapshot.error,
-                                            style: TextStyle(
-                                                color: widget._textColor),
-                                          )
-                                        : Container(),
-                                  );
-                                }
-                              },
-                            ),
-                          ),
-                        ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 0, right: 0, top: 10),
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => EventSchedulePage()));
+                    },
+                    child: Card(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15.0),
                       ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 20, top: 20),
-                    child: Text(
-                      "HUB",
-                      style: TextStyle(
-                          color: widget._textColor,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  Padding(
-                    padding:
-                        const EdgeInsets.only(left: 20, right: 20, top: 10),
-                    child: GestureDetector(
-                      onTap: () {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (_) => ChatScreen()));
-                      },
-                      child: Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15.0),
-                        ),
-                        color:  Color(0xFF232323),
-                        child: Container(
-                          height: 220,
+                      color: Color(0xFF232323),
+                      child: Container(
+                          height: 250,
                           //color: Colors.grey[850],
-                          child: Column(
-                            children: <Widget>[
-                              Expanded(
-                                  child: StreamBuilder<QuerySnapshot>(
-                                stream: databaseReference
-                                    .collection('messages')
-                                    .orderBy('datetime', descending: true)
-                                    .snapshots(),
-                                builder: (context, snapshot) {
-                                  if (snapshot.hasData) {
-                                    return ListView.builder(
-                                      reverse: true,
-                                      controller: _controller,
-                                      padding: const EdgeInsets.all(15),
-                                      itemCount: snapshot.data.docs.length,
-                                      itemBuilder: (ctx, i) {
-                                        if (snapshot.data.docs[i]
-                                                    .data()['id_user'] !=
-                                                userId &&
-                                            snapshot.data.docs[i]
-                                                    .data()["msg"] !=
-                                                "imgurl") {
-                                          return SentMessageWidget(
-                                            i: snapshot.data.docs[i]
-                                                .data()["msg"],
-                                            nom: snapshot.data.docs[i]
-                                                .data()["nom"],
-                                            userId: snapshot.data.docs[i]
-                                                .data()["id_user"],
-                                            imgUrl: "",
-                                            imgProfil: snapshot.data.docs[i]
-                                                .data()["imgProfil"],
-                                            help: snapshot.data.docs[i]
-                                                .data()["help"],
-                                          );
-                                        } else if (snapshot.data.docs[i]
-                                                    .data()['id_user'] ==
-                                                userId &&
-                                            snapshot.data.docs[i]
-                                                    .data()["msg"] !=
-                                                "imgurl") {
-                                          return ReceivedMessagesWidget(
-                                            i: snapshot.data.docs[i]
-                                                .data()["msg"],
-                                            imgUrl: "",
-                                            help: snapshot.data.docs[i]
-                                                .data()["help"],
-                                          );
-                                        } else if (snapshot.data.docs[i]
-                                                    .data()['id_user'] ==
-                                                userId &&
-                                            snapshot.data.docs[i]
-                                                    .data()["imgUrl"] !=
-                                                "") {
-                                          return InkWell(
-                                              onTap: () {
-                                                Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            FullScreenImage(
-                                                                snapshot.data
-                                                                        .docs[i]
-                                                                        .data()[
-                                                                    "imgUrl"])));
-                                              },
-                                              child: ReceivedMessagesWidget(
-                                                i: "",
-                                                imgUrl: snapshot.data.docs[i]
-                                                    .data()["imgUrl"],
-                                                help: snapshot.data.docs[i]
-                                                    .data()["help"],
-                                              ));
-                                        } else if (snapshot.data.docs[i]
-                                                    .data()['id_user'] !=
-                                                userId &&
-                                            snapshot.data.docs[i]
-                                                    .data()["imgUrl"] !=
-                                                "") {
-                                          return InkWell(
-                                              onTap: () {
-                                                Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                        builder: (context) =>
-                                                            FullScreenImage(
-                                                                snapshot.data
-                                                                        .docs[i]
-                                                                        .data()[
-                                                                    "imgUrl"])));
-                                              },
-                                              child: SentMessageWidget(
-                                                i: "",
-                                                userId: snapshot.data.docs[i]
-                                                    .data()['id_user'],
-                                                imgUrl: snapshot.data.docs[i]
-                                                    .data()["imgUrl"],
-                                                nom: snapshot.data.docs[i]
-                                                    .data()["nom"],
-                                                imgProfil: snapshot.data.docs[i]
-                                                    .data()["imgProfil"],
-                                                help: snapshot.data.docs[i]
-                                                    .data()["help"],
-                                              ));
-                                        } else {
-                                          return Text("No messages");
-                                        }
-                                      },
-                                    );
-                                  } else {
-                                    return SizedBox();
-                                  }
-                                },
-                              )),
-                            ],
-                          ),
-                        ),
-                      ),
+                          child: ListView(
+                            children: [getDay(day)],
+                          )),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
